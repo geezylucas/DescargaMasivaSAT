@@ -1,6 +1,5 @@
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateEncodingException;
@@ -24,6 +23,7 @@ public class Main {
 
         // Get Token
         String token = getToken();
+        System.out.println("hola");
     }
 
     public static X509Certificate getCertificate(File file)
@@ -33,7 +33,8 @@ public class Main {
             NoSuchAlgorithmException {
         KeyStore ks = KeyStore.getInstance("PKCS12");
         ks.load(new FileInputStream(file), pwdPFX);
-        return (X509Certificate) ks.getCertificate("alias");
+        String alias = ks.aliases().nextElement();
+        return (X509Certificate) ks.getCertificate(alias);
     }
 
     public static PrivateKey getPrivateKey(File file)
@@ -44,7 +45,8 @@ public class Main {
             UnrecoverableKeyException {
         KeyStore ks = KeyStore.getInstance("PKCS12");
         ks.load(new FileInputStream(file), pwdPFX);
-        return (PrivateKey) ks.getKey("alias", pwdPFX);
+        String alias = ks.aliases().nextElement();
+        return (PrivateKey) ks.getKey(alias, pwdPFX);
     }
 
     public static String getToken()
@@ -54,8 +56,9 @@ public class Main {
             InvalidKeyException,
             CertificateEncodingException {
         Authentication authentication = new Authentication(urlAutentica, urlAutenticaAction);
+
         authentication.generate(certificate, privateKey);
 
-        return null;
+        return authentication.send();
     }
 }

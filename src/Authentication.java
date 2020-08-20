@@ -1,3 +1,5 @@
+import org.w3c.dom.Document;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -13,6 +15,27 @@ public class Authentication extends SoapRequestBase {
         super(url, SOAPAction);
     }
 
+    @Override
+    protected String getResult(String xmlResponse) {
+        Document doc = convertStringToXMLDocument(xmlResponse);
+
+        //Verify XML document is build correctly
+        if (doc != null)
+            return doc.getElementsByTagName("AutenticaResult").item(0).getTextContent();
+
+        return null;
+    }
+
+    /**
+     * Generate XML to send through SAT's web service
+     *
+     * @param certificate
+     * @param privateKey
+     * @throws NoSuchAlgorithmException
+     * @throws SignatureException
+     * @throws InvalidKeyException
+     * @throws CertificateEncodingException
+     */
     public void generate(X509Certificate certificate, PrivateKey privateKey)
             throws NoSuchAlgorithmException,
             SignatureException,

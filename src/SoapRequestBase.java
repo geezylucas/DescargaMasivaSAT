@@ -1,13 +1,19 @@
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.Base64;
 
-public abstract class SoapRequestBase {
+abstract class SoapRequestBase {
 
     private String xml;
     private final String url;
@@ -19,17 +25,43 @@ public abstract class SoapRequestBase {
         this.SOAPAction = SOAPAction;
     }
 
-    public void setXml(String xml) {
+    protected void setXml(String xml) {
         this.xml = xml;
     }
 
+    /**
+     * Get result of a previously obtained XML
+     *
+     * @param xmlResponse
+     * @return
+     */
+    protected abstract String getResult(String xmlResponse);
+
+    /**
+     * Create digest SHA1 from a String and returning a Base64 String
+     *
+     * @param sourceData
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
     protected String createDigest(String sourceData) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-1");
         digest.reset();
         digest.update(sourceData.getBytes());
+
         return Base64.getEncoder().encodeToString(digest.digest());
     }
 
+    /**
+     * Sign SHA1 with private key and a String and returning a Base64 String
+     *
+     * @param sourceData
+     * @param privateKey
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeyException
+     * @throws SignatureException
+     */
     protected String sign(String sourceData, PrivateKey privateKey) throws
             NoSuchAlgorithmException,
             InvalidKeyException,
@@ -37,10 +69,16 @@ public abstract class SoapRequestBase {
         Signature sig = Signature.getInstance("SHA1WithRSA");
         sig.initSign(privateKey);
         sig.update(sourceData.getBytes());
-        byte[] signData = sig.sign();
-        return Base64.getEncoder().encodeToString(signData);
+
+        return Base64.getEncoder().encodeToString(sig.sign());
     }
 
+    /**
+     * Create HttpURLConnection to send previously created XML
+     *
+     * @return
+     * @throws IOException
+     */
     protected String send() throws IOException {
         URL url = new URL(this.url);
 
@@ -65,10 +103,7 @@ public abstract class SoapRequestBase {
         outputStream.flush();
         outputStream.close();
 
-        // Check the error stream first, if this is null then there have been no issues with the request
-        InputStream inputStream = conn.getErrorStream();
-        if (inputStream == null)
-            inputStream = conn.getInputStream();
+        InputStream inputStream = conn.getInputStream();
 
         // Read XML
         byte[] res = new byte[2048];
@@ -79,6 +114,31 @@ public abstract class SoapRequestBase {
         }
         inputStream.close();
 
-        return response.toString();
+        return getResult(response.toString());
+    }
+
+    /**
+     * Convert a String to XMl (Document Object)
+     *
+     * @param xmlString
+     * @return
+     */
+    protected static Document convertStringToXMLDocument(String xmlString) {
+        //Parser that produces DOM object trees from XML content
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
+        //API to obtain DOM Document instance
+        DocumentBuilder builder;
+        try {
+            //Create DocumentBuilder with default configuration
+            builder = factory.newDocumentBuilder();
+
+            //Parse the content to Document object
+            return builder.parse(new InputSource(new StringReader(xmlString)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

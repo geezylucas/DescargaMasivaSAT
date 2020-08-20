@@ -23,9 +23,19 @@ public class Main {
 
         // Get Token
         String token = getToken();
-        System.out.println("hola");
+        System.out.println(token);
     }
 
+    /**
+     * Get a certificate through a pfx file
+     *
+     * @param file
+     * @return
+     * @throws KeyStoreException
+     * @throws IOException
+     * @throws CertificateException
+     * @throws NoSuchAlgorithmException
+     */
     public static X509Certificate getCertificate(File file)
             throws KeyStoreException,
             IOException,
@@ -34,9 +44,21 @@ public class Main {
         KeyStore ks = KeyStore.getInstance("PKCS12");
         ks.load(new FileInputStream(file), pwdPFX);
         String alias = ks.aliases().nextElement();
+
         return (X509Certificate) ks.getCertificate(alias);
     }
 
+    /**
+     * Get a private key through a pfx file
+     *
+     * @param file
+     * @return
+     * @throws KeyStoreException
+     * @throws IOException
+     * @throws CertificateException
+     * @throws NoSuchAlgorithmException
+     * @throws UnrecoverableKeyException
+     */
     public static PrivateKey getPrivateKey(File file)
             throws KeyStoreException,
             IOException,
@@ -46,9 +68,20 @@ public class Main {
         KeyStore ks = KeyStore.getInstance("PKCS12");
         ks.load(new FileInputStream(file), pwdPFX);
         String alias = ks.aliases().nextElement();
+
         return (PrivateKey) ks.getKey(alias, pwdPFX);
     }
 
+    /**
+     * Get XML response through SAT's web service and extract token from it
+     *
+     * @return
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     * @throws SignatureException
+     * @throws InvalidKeyException
+     * @throws CertificateEncodingException
+     */
     public static String getToken()
             throws IOException,
             NoSuchAlgorithmException,
@@ -56,7 +89,6 @@ public class Main {
             InvalidKeyException,
             CertificateEncodingException {
         Authentication authentication = new Authentication(urlAutentica, urlAutenticaAction);
-
         authentication.generate(certificate, privateKey);
 
         return authentication.send();

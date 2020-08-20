@@ -79,7 +79,7 @@ abstract class SoapRequestBase {
      * @return
      * @throws IOException
      */
-    protected String send() throws IOException {
+    protected String send(String authorization) throws IOException {
         URL url = new URL(this.url);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -96,6 +96,9 @@ abstract class SoapRequestBase {
         conn.setRequestProperty("Accept-Charset", "UTF_8");
         conn.setRequestProperty("Content-type", "text/xml; charset=utf-8");
         conn.setRequestProperty("SOAPAction", SOAPAction);
+
+        if (authorization != null)
+            conn.setRequestProperty("Authorization", authorization);
 
         // Write XML
         OutputStream outputStream = conn.getOutputStream();

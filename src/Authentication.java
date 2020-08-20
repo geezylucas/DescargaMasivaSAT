@@ -11,6 +11,12 @@ import java.util.*;
 
 public class Authentication extends SoapRequestBase {
 
+    /**
+     * Constructor of Authentication class
+     *
+     * @param url
+     * @param SOAPAction
+     */
     public Authentication(String url, String SOAPAction) {
         super(url, SOAPAction);
     }

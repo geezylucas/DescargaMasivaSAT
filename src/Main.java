@@ -18,9 +18,12 @@ public class Main {
     final static String urlSolicitud = "https://cfdidescargamasivasolicitud.clouda.sat.gob.mx/SolicitaDescargaService.svc";
     final static String urlSolicitudAction = "http://DescargaMasivaTerceros.sat.gob.mx/ISolicitaDescargaService/SolicitaDescarga";
 
-    final static String rfc = "CAJF760331FU1";
-    final static String fechaInicial = "2015-01-01";
-    final static String fechaFinal = "2015-01-02";
+    final static String urlVerificarSolicitud = "https://cfdidescargamasivasolicitud.clouda.sat.gob.mx/VerificaSolicitudDescargaService.svc";
+    final static String urlVerificarSolicitudAction = "http://DescargaMasivaTerceros.sat.gob.mx/IVerificaSolicitudDescargaService/VerificaSolicitudDescarga";
+
+    final static String rfc = "PTI121203SZ0";
+    final static String fechaInicial = "2019-09-01";
+    final static String fechaFinal = "2019-09-20";
 
     static X509Certificate certificate = null;
     static PrivateKey privateKey = null;
@@ -32,9 +35,12 @@ public class Main {
         privateKey = getPrivateKey(filePFX);
 
         // Get Token
-        String token = getToken();
-        String idRequest = getRequest("WRAP access_token=\"" + decodeValue(token) + "\"");
-        System.out.println(idRequest);
+        String token = "WRAP access_token=\"" + decodeValue(getToken()) + "\"";
+        // Get idRequest with token obtained
+        //String idRequest = getRequest(token);
+        String idRequest = "7f6739ad-c174-48e8-a66c-cac8bd1fcfa1";
+        String idPackages = getVerifyRequest(token, idRequest);
+        System.out.println(idPackages);
     }
 
     /**
@@ -124,9 +130,33 @@ public class Main {
             IOException {
         Request request = new Request(urlSolicitud, urlSolicitudAction);
         request.setTipoSolicitud("CFDI");
-        request.generate(certificate, privateKey, rfc, rfc, rfc, fechaInicial, fechaFinal);
+        request.generate(certificate, privateKey, rfc, "", rfc, fechaInicial, fechaFinal);
 
         return request.send(token);
+    }
+
+    /**
+     * Get XML response through SAT's web service and extract idPackages from it
+     *
+     * @param token
+     * @param idRequest
+     * @return
+     * @throws CertificateEncodingException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeyException
+     * @throws SignatureException
+     * @throws IOException
+     */
+    public static String getVerifyRequest(String token, String idRequest)
+            throws CertificateEncodingException,
+            NoSuchAlgorithmException,
+            InvalidKeyException,
+            SignatureException,
+            IOException {
+        VerifyRequest verifyRequest = new VerifyRequest(urlVerificarSolicitud, urlVerificarSolicitudAction);
+        verifyRequest.generate(certificate, privateKey, idRequest, rfc);
+
+        return verifyRequest.send(token);
     }
 
     /**

@@ -66,10 +66,13 @@ public class Authentication extends SoapRequestBase {
                 "<CanonicalizationMethod Algorithm=\"http://www.w3.org/2001/10/xml-exc-c14n#\"></CanonicalizationMethod>" +
                 "<SignatureMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#rsa-sha1\"></SignatureMethod>" +
                 "<Reference URI=\"#_0\">" +
-                "<Transforms><Transform Algorithm=\"http://www.w3.org/2001/10/xml-exc-c14n#\"></Transform></Transforms>" +
+                "<Transforms>" +
+                "<Transform Algorithm=\"http://www.w3.org/2001/10/xml-exc-c14n#\"></Transform>" +
+                "</Transforms>" +
                 "<DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"></DigestMethod>" +
                 "<DigestValue>" + digest + "</DigestValue>" +
-                "</Reference></SignedInfo>";
+                "</Reference>" +
+                "</SignedInfo>";
 
         String signature = sign(canonicalSignedInfo, privateKey);
 

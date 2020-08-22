@@ -6,24 +6,19 @@ import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Base64;
 
-public class Request extends SoapRequestBase {
-
-    private String tipoSolicitud;
+public class VerifyRequest extends SoapRequestBase {
 
     /**
-     * Constructor of Request class
+     * Constructor of VerifyRequest class
      *
      * @param url
      * @param SOAPAction
      */
-    public Request(String url, String SOAPAction) {
+    public VerifyRequest(String url, String SOAPAction) {
         super(url, SOAPAction);
-    }
-
-    public void setTipoSolicitud(String tipoSolicitud) {
-        this.tipoSolicitud = tipoSolicitud;
     }
 
     @Override
@@ -31,47 +26,27 @@ public class Request extends SoapRequestBase {
         Document doc = convertStringToXMLDocument(xmlResponse);
 
         //Verify XML document is build correctly
-        if (doc != null)
-            return doc.getElementsByTagName("SolicitaDescargaResult")
+        if (doc != null) {
+            int estadoSolicitud = Integer.parseInt(doc.getElementsByTagName("VerificaSolicitudDescargaResult")
                     .item(0)
                     .getAttributes()
-                    .getNamedItem("IdSolicitud").getTextContent();
+                    .getNamedItem("EstadoSolicitud").getTextContent());
+
+            if (estadoSolicitud == 3)
+                return doc.getElementsByTagName("IdsPaquetes").item(0).getTextContent();
+        }
 
         return null;
     }
 
-
-    /**
-     * Generate XML to send through SAT's web service
-     *
-     * @param certificate
-     * @param privateKey
-     * @param rfcEmisor
-     * @param rfcReceptor
-     * @param rfcSolicitante
-     * @param fechaInicial
-     * @param fechaFinal
-     * @throws NoSuchAlgorithmException
-     * @throws SignatureException
-     * @throws InvalidKeyException
-     * @throws CertificateEncodingException
-     */
-    public void generate(X509Certificate certificate,
-                         PrivateKey privateKey,
-                         String rfcEmisor,
-                         String rfcReceptor,
-                         String rfcSolicitante,
-                         String fechaInicial,
-                         String fechaFinal
-    ) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, CertificateEncodingException {
-
-        fechaInicial = fechaInicial + "T00:00:00";
-        fechaFinal = fechaFinal + "T23:59:59";
-
-        String canonicalTimestamp = "<des:SolicitaDescarga xmlns:des=\"http://DescargaMasivaTerceros.sat.gob.mx\">" +
-                "<des:solicitud RfcEmisor=\"" + rfcEmisor + "\" RfcReceptor=\"" + rfcReceptor + "\" RfcSolicitante=\"" + rfcSolicitante + "\" FechaInicial=\"" + fechaInicial + "\" FechaFinal=\"" + fechaFinal + "\" TipoSolicitud=\"" + this.tipoSolicitud + "\">" +
+    public void generate(X509Certificate certificate, PrivateKey privateKey, String idRequest, String rfcSolicitante)
+            throws NoSuchAlgorithmException,
+            SignatureException,
+            InvalidKeyException, CertificateEncodingException {
+        String canonicalTimestamp = "<des:VerificaSolicitudDescarga xmlns:des=\"http://DescargaMasivaTerceros.sat.gob.mx\">" +
+                "<des:solicitud IdSolicitud=\"" + idRequest + "\" RfcSolicitante=\"" + rfcSolicitante + ">" +
                 "</des:solicitud>" +
-                "</des:SolicitaDescarga>";
+                "</des:VerificaSolicitudDescarga>";
 
         String digest = createDigest(canonicalTimestamp);
 
@@ -91,16 +66,15 @@ public class Request extends SoapRequestBase {
         this.setXml("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:u=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\" xmlns:des=\"http://DescargaMasivaTerceros.sat.gob.mx\" xmlns:xd=\"http://www.w3.org/2000/09/xmldsig#\">" +
                 "<s:Header/>" +
                 "<s:Body>" +
-                "<des:SolicitaDescarga>" +
-                "<des:solicitud RfcEmisor=\"" + rfcEmisor + "\" RfcReceptor =\"" + rfcReceptor + "\" RfcSolicitante=\"" + rfcSolicitante + "\" FechaInicial=\"" + fechaInicial + "\" FechaFinal =\"" + fechaFinal + "\" TipoSolicitud=\"" + this.tipoSolicitud + "\">" +
+                "<des:VerificaSolicitudDescarga>" +
+                "<des:solicitud IdSolicitud=\"" + idRequest + "\" RfcSolicitante=\"" + rfcSolicitante + "\">" +
                 "<Signature xmlns=\"http://www.w3.org/2000/09/xmldsig#\">" +
                 "<SignedInfo>" +
                 "<CanonicalizationMethod Algorithm=\"http://www.w3.org/2001/10/xml-exc-c14n#\"/>" +
                 "<SignatureMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#rsa-sha1\"/>" +
                 "<Reference URI=\"#_0\">" +
                 "<Transforms>" +
-                "<Transform Algorithm=\"http://www.w3.org/2001/10/xml-exc-c14n#\"/>" +
-                "</Transforms>" +
+                "<Transform Algorithm=\"http://www.w3.org/2001/10/xml-exc-c14n#\"/></Transforms>" +
                 "<DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"/>" +
                 "<DigestValue>" + digest + "</DigestValue>" +
                 "</Reference>" +
@@ -117,7 +91,7 @@ public class Request extends SoapRequestBase {
                 "</KeyInfo>" +
                 "</Signature>" +
                 "</des:solicitud>" +
-                "</des:SolicitaDescarga>" +
+                "</des:VerificaSolicitudDescarga>" +
                 "</s:Body>" +
                 "</s:Envelope>");
     }

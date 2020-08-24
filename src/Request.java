@@ -8,7 +8,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 
-public class Request extends SoapRequestBase {
+public class Request extends RequestBase {
 
     private String tipoSolicitud;
 
@@ -40,7 +40,6 @@ public class Request extends SoapRequestBase {
         return null;
     }
 
-
     /**
      * Generate XML to send through SAT's web service
      *
@@ -64,7 +63,6 @@ public class Request extends SoapRequestBase {
                          String fechaInicial,
                          String fechaFinal
     ) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, CertificateEncodingException {
-
         fechaInicial = fechaInicial + "T00:00:00";
         fechaFinal = fechaFinal + "T23:59:59";
 
@@ -88,6 +86,7 @@ public class Request extends SoapRequestBase {
                 "</SignedInfo>";
 
         String signature = sign(canonicalSignedInfo, privateKey);
+
         this.setXml("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:u=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\" xmlns:des=\"http://DescargaMasivaTerceros.sat.gob.mx\" xmlns:xd=\"http://www.w3.org/2000/09/xmldsig#\">" +
                 "<s:Header/>" +
                 "<s:Body>" +

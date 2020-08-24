@@ -13,13 +13,19 @@ import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.Base64;
 
-abstract class SoapRequestBase {
+abstract class RequestBase {
 
     private String xml;
     private final String url;
     private final String SOAPAction;
 
-    protected SoapRequestBase(String url, String SOAPAction) {
+    /**
+     * Constructor of RequestBase class
+     *
+     * @param url
+     * @param SOAPAction
+     */
+    protected RequestBase(String url, String SOAPAction) {
         this.xml = null;
         this.url = url;
         this.SOAPAction = SOAPAction;

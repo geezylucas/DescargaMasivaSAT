@@ -8,15 +8,15 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 
-public class VerifyRequest extends RequestBase {
+public class Download extends RequestBase {
 
     /**
-     * Constructor of VerifyRequest class
+     * Constructor of Download class
      *
      * @param url
      * @param SOAPAction
      */
-    public VerifyRequest(String url, String SOAPAction) {
+    protected Download(String url, String SOAPAction) {
         super(url, SOAPAction);
     }
 
@@ -25,15 +25,10 @@ public class VerifyRequest extends RequestBase {
         Document doc = convertStringToXMLDocument(xmlResponse);
 
         //Verify XML document is build correctly
-        if (doc != null) {
-            int stateRequest = Integer.parseInt(doc.getElementsByTagName("VerificaSolicitudDescargaResult")
+        if (doc != null)
+            return doc.getElementsByTagName("Paquete")
                     .item(0)
-                    .getAttributes()
-                    .getNamedItem("EstadoSolicitud").getTextContent());
-
-            if (stateRequest == 3)
-                return doc.getElementsByTagName("IdsPaquetes").item(0).getTextContent();
-        }
+                    .getTextContent();
 
         return null;
     }
@@ -43,19 +38,18 @@ public class VerifyRequest extends RequestBase {
      *
      * @param certificate
      * @param privateKey
-     * @param idRequest
      * @param rfcSolicitante
+     * @param idPackage
      * @throws NoSuchAlgorithmException
      * @throws SignatureException
      * @throws InvalidKeyException
      * @throws CertificateEncodingException
      */
-    public void generate(X509Certificate certificate, PrivateKey privateKey, String idRequest, String rfcSolicitante)
+    public void generate(X509Certificate certificate, PrivateKey privateKey, String rfcSolicitante, String idPackage)
             throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, CertificateEncodingException {
-        String canonicalTimestamp = "<des:VerificaSolicitudDescarga xmlns:des=\"http://DescargaMasivaTerceros.sat.gob.mx\">" +
-                "<des:solicitud IdSolicitud=\"" + idRequest + "\" RfcSolicitante=\"" + rfcSolicitante + ">" +
-                "</des:solicitud>" +
-                "</des:VerificaSolicitudDescarga>";
+        String canonicalTimestamp = "<des:PeticionDescargaMasivaTercerosEntrada xmlns:des=\"http://DescargaMasivaTerceros.sat.gob.mx\">" +
+                "<des:peticionDescarga IdPaquete=\"" + idPackage + "\" RfcSolicitante=\"" + rfcSolicitante + "></des:peticionDescarga>" +
+                "</des:PeticionDescargaMasivaTercerosEntrada>";
 
         String digest = createDigest(canonicalTimestamp);
 
@@ -76,15 +70,16 @@ public class VerifyRequest extends RequestBase {
         this.setXml("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:u=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\" xmlns:des=\"http://DescargaMasivaTerceros.sat.gob.mx\" xmlns:xd=\"http://www.w3.org/2000/09/xmldsig#\">" +
                 "<s:Header/>" +
                 "<s:Body>" +
-                "<des:VerificaSolicitudDescarga>" +
-                "<des:solicitud IdSolicitud=\"" + idRequest + "\" RfcSolicitante=\"" + rfcSolicitante + "\">" +
+                "<des:PeticionDescargaMasivaTercerosEntrada>" +
+                "<des:peticionDescarga IdPaquete=\"" + idPackage + "\" RfcSolicitante=\"" + rfcSolicitante + "\">" +
                 "<Signature xmlns=\"http://www.w3.org/2000/09/xmldsig#\">" +
                 "<SignedInfo>" +
                 "<CanonicalizationMethod Algorithm=\"http://www.w3.org/2001/10/xml-exc-c14n#\"/>" +
                 "<SignatureMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#rsa-sha1\"/>" +
                 "<Reference URI=\"#_0\">" +
                 "<Transforms>" +
-                "<Transform Algorithm=\"http://www.w3.org/2001/10/xml-exc-c14n#\"/></Transforms>" +
+                "<Transform Algorithm=\"http://www.w3.org/2001/10/xml-exc-c14n#\"/>" +
+                "</Transforms>" +
                 "<DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"/>" +
                 "<DigestValue>" + digest + "</DigestValue>" +
                 "</Reference>" +
@@ -100,8 +95,8 @@ public class VerifyRequest extends RequestBase {
                 "</X509Data>" +
                 "</KeyInfo>" +
                 "</Signature>" +
-                "</des:solicitud>" +
-                "</des:VerificaSolicitudDescarga>" +
+                "</des:peticionDescarga>" +
+                "</des:PeticionDescargaMasivaTercerosEntrada>" +
                 "</s:Body>" +
                 "</s:Envelope>");
     }

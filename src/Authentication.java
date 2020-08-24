@@ -9,7 +9,7 @@ import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class Authentication extends SoapRequestBase {
+public class Authentication extends RequestBase {
 
     /**
      * Constructor of Authentication class
@@ -43,9 +43,7 @@ public class Authentication extends SoapRequestBase {
      * @throws CertificateEncodingException
      */
     public void generate(X509Certificate certificate, PrivateKey privateKey)
-            throws NoSuchAlgorithmException,
-            SignatureException,
-            InvalidKeyException, CertificateEncodingException {
+            throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, CertificateEncodingException {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         Calendar calendarNow = Calendar.getInstance();

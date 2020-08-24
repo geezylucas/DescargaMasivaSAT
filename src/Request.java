@@ -10,7 +10,7 @@ import java.util.Base64;
 
 public class Request extends RequestBase {
 
-    private String tipoSolicitud;
+    private String typeRequest;
 
     /**
      * Constructor of Request class
@@ -22,8 +22,8 @@ public class Request extends RequestBase {
         super(url, SOAPAction);
     }
 
-    public void setTipoSolicitud(String tipoSolicitud) {
-        this.tipoSolicitud = tipoSolicitud;
+    public void setTypeRequest(String typeRequest) {
+        this.typeRequest = typeRequest;
     }
 
     @Override
@@ -67,7 +67,7 @@ public class Request extends RequestBase {
         fechaFinal = fechaFinal + "T23:59:59";
 
         String canonicalTimestamp = "<des:SolicitaDescarga xmlns:des=\"http://DescargaMasivaTerceros.sat.gob.mx\">" +
-                "<des:solicitud RfcEmisor=\"" + rfcEmisor + "\" RfcReceptor=\"" + rfcReceptor + "\" RfcSolicitante=\"" + rfcSolicitante + "\" FechaInicial=\"" + fechaInicial + "\" FechaFinal=\"" + fechaFinal + "\" TipoSolicitud=\"" + this.tipoSolicitud + "\">" +
+                "<des:solicitud RfcEmisor=\"" + rfcEmisor + "\" RfcReceptor=\"" + rfcReceptor + "\" RfcSolicitante=\"" + rfcSolicitante + "\" FechaInicial=\"" + fechaInicial + "\" FechaFinal=\"" + fechaFinal + "\" TipoSolicitud=\"" + this.typeRequest + "\">" +
                 "</des:solicitud>" +
                 "</des:SolicitaDescarga>";
 
@@ -91,7 +91,7 @@ public class Request extends RequestBase {
                 "<s:Header/>" +
                 "<s:Body>" +
                 "<des:SolicitaDescarga>" +
-                "<des:solicitud RfcEmisor=\"" + rfcEmisor + "\" RfcReceptor =\"" + rfcReceptor + "\" RfcSolicitante=\"" + rfcSolicitante + "\" FechaInicial=\"" + fechaInicial + "\" FechaFinal =\"" + fechaFinal + "\" TipoSolicitud=\"" + this.tipoSolicitud + "\">" +
+                "<des:solicitud RfcEmisor=\"" + rfcEmisor + "\" RfcReceptor =\"" + rfcReceptor + "\" RfcSolicitante=\"" + rfcSolicitante + "\" FechaInicial=\"" + fechaInicial + "\" FechaFinal =\"" + fechaFinal + "\" TipoSolicitud=\"" + this.typeRequest + "\">" +
                 "<Signature xmlns=\"http://www.w3.org/2000/09/xmldsig#\">" +
                 "<SignedInfo>" +
                 "<CanonicalizationMethod Algorithm=\"http://www.w3.org/2001/10/xml-exc-c14n#\"/>" +

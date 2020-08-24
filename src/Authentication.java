@@ -49,7 +49,7 @@ public class Authentication extends RequestBase {
         Calendar calendarNow = Calendar.getInstance();
 
         String created = simpleDateFormat.format(calendarNow.getTime());
-        calendarNow.add(Calendar.SECOND, 300);
+        calendarNow.add(Calendar.SECOND, 300); // Add 300 seconds which equals 5 minutes
         String expires = simpleDateFormat.format(calendarNow.getTime());
         String uuid = "uuid-" + UUID.randomUUID().toString() + "-1";
 
